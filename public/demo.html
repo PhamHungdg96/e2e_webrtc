@@ -1,0 +1,66 @@
+<html>
+<head>
+<script src="olm/olm.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    Olm.init().then(function() {
+        demo();
+    });
+}, false);
+
+function demo() {
+    window.alice = new Olm.Account();
+    window.bob = new Olm.Account();
+    var a_session = new Olm.Session();
+    var b_session = new Olm.Session();
+    var message_1;
+    var tasks = [];
+    console.log('Creating account alice')
+    alice.create()
+    console.log('Creating account bob')
+    bob.create()
+    console.log('thiet lap ket noi.')
+    alice.generate_one_time_keys(1000);
+    var alice_id_keys = JSON.parse(alice.identity_keys());
+    console.log("identity_keys",alice_id_keys)
+    var alice_id_key = alice_id_keys.curve25519;
+    var alice_ot_keys = JSON.parse(alice.one_time_keys());
+    console.log("one_time_keys",alice_ot_keys)
+    var alice_ot_key;
+    for (key in alice_ot_keys.curve25519) {
+        alice_ot_key = alice_ot_keys.curve25519[key];
+    }
+    console.log('Alice tạo một số cặp khóa dùng một lần và xuất bản chúng')
+    a_session.create_outbound(bob, alice_id_key, alice_ot_key);
+    
+    
+    message_1 = a_session.encrypt("");
+    console.log('message',message_1)
+    console.log('Bob nhan va')
+    b_session.create_inbound(alice, message_1.body);
+
+
+    b_session.decrypt(message_1.type, message_1.body);
+    
+}
+
+</script>
+<body>
+<div id="alice">
+    <h1>Alice</h1>
+    <div id="alice_progress"></div>
+    <h2>Encryption</h2>
+    <textarea id="alice_plain_input"></textarea>
+    <button id="alice_encrypt">Encrypt</button>
+    <div id="alice_cipher_output"></div>
+</div>
+<div id="bob">
+    <h1>Bob</h1>
+    <div id="bob_progress"></div>
+    <h2>Decryption</h2>
+    <textarea id="bob_cipher_input"></textarea>
+    <button id="bob_decrypt">Decrypt</button>
+    <div id="bob_plain_output"></div>
+</div>
+</body>
+</html>
